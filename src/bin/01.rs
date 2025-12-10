@@ -29,48 +29,39 @@ fn solve_01(input: &str) -> Option<u64> {
     let mut current_location = 50;
     let mut count: u64 = 0;
     let mut num;
+    let mut remainder;
 
     for t in turns {
         let num_only = remove_first_char(t);
+        let first_letter = get_first_char(t);
 
         num = num_only.parse::<i32>().unwrap();
 
-        if get_first_char(t) == Some('L') {
-            num *= -1;
+        remainder = num % 100;
+
+        println!("hhh remainder: {remainder}");
+
+        if first_letter == Some('L') {
+            num = current_location - remainder;
+        } else {
+            num = current_location + remainder;
         }
 
-        // Check if the number is larger than 99
-        // If it is, need to get the last two digits
-        // e.g. 234 would go around twice, so 34 is the value to use
-        if num > 99 {
-            num = remove_first_char(&num.to_string()[..])
-                .parse::<i32>()
-                .unwrap();
-        } else if num < -99 {
-            num *= -1;
-            num = remove_first_char(&num.to_string()[..])
-                .parse::<i32>()
-                .unwrap_or_default();
-        }
+        println!("hhh num: {num}");
 
-        let mut sum = current_location + num;
+        let sec_rem = num % 100;
 
-        // Check for conditions that go past the range
-        if sum < 0 {
-            // take the remainder past 0 of the addition and subtract from 99
-            sum += 100
-        } else if sum > 99 {
-            // take the remainder past 99 and add it to 0
-            sum -= 99
-        }
+        println!("hhh sec_rem: {sec_rem} ");
 
         // Check if our total is at 0 exactly
-        if sum == 0 {
+        if sec_rem == 0 {
             count += 1;
         }
 
         // Always update the current location of the dial
-        current_location = sum;
+        if first_letter == Some('L') {
+            current_location = num;
+        }
     }
 
     // Return the count
@@ -91,13 +82,13 @@ mod tests {
 
     #[test]
     fn test_part_one() {
-        let result = part_one(&advent_of_code::template::read_file("inputs", DAY));
-        assert_eq!(result, None);
+        let result = part_one(&advent_of_code::template::read_file("examples", DAY));
+        assert_eq!(result, Some(3));
     }
 
-    #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
-        assert_eq!(result, None);
-    }
+    // #[test]
+    // fn test_part_two() {
+    //     let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+    //     assert_eq!(result, Some(42));
+    // }
 }
