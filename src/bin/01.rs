@@ -29,7 +29,6 @@ fn solve_01(input: &str) -> Option<u64> {
     let mut current_location = 50;
     let mut count: u64 = 0;
     let mut num;
-    let mut remainder;
 
     for t in turns {
         let num_only = remove_first_char(t);
@@ -37,31 +36,27 @@ fn solve_01(input: &str) -> Option<u64> {
 
         num = num_only.parse::<i32>().unwrap();
 
-        remainder = num % 100;
-
-        println!("hhh remainder: {remainder}");
-
         if first_letter == Some('L') {
-            num = current_location - remainder;
+            current_location -= num;
         } else {
-            num = current_location + remainder;
+            current_location += num;
         }
 
-        println!("hhh num: {num}");
+        if current_location > 99 {
+            current_location = current_location % 100;
+        }
 
-        let sec_rem = num % 100;
+        if current_location < 0 {
+            current_location = 100 - (current_location % 100).abs();
+        }
 
-        println!("hhh sec_rem: {sec_rem} ");
+        println!("Rotating {t}, dial now at position: {current_location}");
 
-        // Check if our total is at 0 exactly
-        if sec_rem == 0 {
+        if (current_location % 100) == 0 {
             count += 1;
+            println!("Updated count: {count}");
         }
 
-        // Always update the current location of the dial
-        if first_letter == Some('L') {
-            current_location = num;
-        }
     }
 
     // Return the count
@@ -86,9 +81,9 @@ mod tests {
         assert_eq!(result, Some(3));
     }
 
-    // #[test]
-    // fn test_part_two() {
-    //     let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
-    //     assert_eq!(result, Some(42));
-    // }
+    #[test]
+    fn test_part_two() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(42));
+    }
 }
