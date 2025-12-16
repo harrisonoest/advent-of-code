@@ -62,10 +62,10 @@ pub fn part_one(input: &str) -> Option<u64> {
 
 pub fn part_two(input: &str) -> Option<u64> {
     /*
-       TODO: Need to count the number of times the dial passes or lands on zero
+    TODO: Need to count the number of times the dial passes or lands on zero
 
-       Brainstorm: - Get rid of negatives by adding a really large number.
-                   - Mod the result and update the count when it is zero
+    Brainstorm: - Get rid of negatives by adding a really large number.
+                - Mod the result and update the count when it is zero
     */
     let turns = input.split_whitespace();
     let mut count: u64 = 0;
