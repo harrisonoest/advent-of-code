@@ -1,10 +1,26 @@
 advent_of_code::solution!(2);
 
-fn find_invalid_id(nums: u64) -> bool {
+fn find_invalid_id_part_one(nums: u64) -> bool {
     let nums_str = nums.to_string();
     let halfway = nums_str.len() / 2;
     let (first_half, second_half) = nums_str.split_at(halfway);
     first_half == second_half
+}
+
+fn find_invalid_id_part_two(nums: u64) -> bool {
+    let nums_str = nums.to_string();
+
+    for i in 2..=nums_str.len() {
+        let sub_str_len = nums_str.len() / i;
+        for j in 1..=sub_str_len {
+            if nums_str.chars().nth(i) != nums_str.chars().nth(i + j * sub_str_len) {
+                continue;
+            }
+        }
+        return true;
+    }
+
+    false
 }
 
 pub fn part_one(_input: &str) -> Option<u64> {
@@ -24,7 +40,7 @@ pub fn part_one(_input: &str) -> Option<u64> {
         let end = range[1].parse::<u64>().unwrap_or_default();
 
         for r in start..=end {
-            if find_invalid_id(r) {
+            if find_invalid_id_part_one(r) {
                 // println!("Found invalid id: {r} in range: {start}-{end}");
                 ret_val += r
             };
@@ -34,7 +50,22 @@ pub fn part_one(_input: &str) -> Option<u64> {
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
-    None
+    let parts: Vec<&str> = _input.split(",").collect();
+    let mut ret_val = 0;
+
+    for p in parts {
+        let range: Vec<&str> = p.split("-").collect();
+        let start = range[0].parse::<u64>().unwrap_or_default();
+        let end = range[1].parse::<u64>().unwrap_or_default();
+
+        for r in start..=end {
+            if find_invalid_id_part_two(r) {
+                // println!("Found invalid id: {r} in range: {start}-{end}");
+                ret_val += r
+            };
+        }
+    }
+    Some(ret_val)
 }
 
 #[cfg(test)]
