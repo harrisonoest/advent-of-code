@@ -8,19 +8,21 @@ fn find_invalid_id_part_one(nums: u64) -> bool {
 }
 
 fn find_invalid_id_part_two(nums: u64) -> bool {
-    let nums_str = nums.to_string();
+    let code_len = nums.checked_ilog10().unwrap_or(0) + 1;
 
-    for i in 2..=nums_str.len() {
-        let sub_str_len = nums_str.len() / i;
-        for j in 1..=sub_str_len {
-            if nums_str.chars().nth(i) != nums_str.chars().nth(i + j * sub_str_len) {
-                continue;
-            }
-        }
-        return true;
+    match code_len {
+        1 => false,
+        2 => nums % 1_1 == 0,
+        3 => nums % 111 == 0,
+        4 => nums % 01_01 == 0,
+        5 => nums % 11111 == 0,
+        6 => nums % 01_01_01 == 0 || nums % 001_001 == 0,
+        7 => nums % 1_111_111 == 0,
+        8 => nums % 0001_0001 == 0 || nums % 01_01_01_01 == 0,
+        9 => nums % 001_001_001 == 0,
+        10 => nums % 00001_00001 == 0 || nums % 01_01_01_01_01 == 0,
+        _ => false,
     }
-
-    false
 }
 
 pub fn part_one(_input: &str) -> Option<u64> {
@@ -30,7 +32,6 @@ pub fn part_one(_input: &str) -> Option<u64> {
             - Split the string by the hyphen
             - The split halves of the string are the range that we need to check
     */
-
     let parts: Vec<&str> = _input.split(",").collect();
     let mut ret_val = 0;
 
@@ -55,14 +56,11 @@ pub fn part_two(_input: &str) -> Option<u64> {
 
     for p in parts {
         let range: Vec<&str> = p.split("-").collect();
-        let start = range[0].parse::<u64>().unwrap_or_default();
-        let end = range[1].parse::<u64>().unwrap_or_default();
+        let start = range[0].parse().unwrap_or_default();
+        let end = range[1].parse().unwrap_or_default();
 
         for r in start..=end {
-            if find_invalid_id_part_two(r) {
-                // println!("Found invalid id: {r} in range: {start}-{end}");
-                ret_val += r
-            };
+            ret_val += u64::from(find_invalid_id_part_two(r)) * r;
         }
     }
     Some(ret_val)
@@ -79,8 +77,13 @@ mod tests {
     }
 
     #[test]
-    fn test_part_two() {
+    fn test_part_two_example() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(4174379265));
+    }
+    #[test]
+    fn test_part_two_input() {
+        let result = part_two(&advent_of_code::template::read_file("inputs", DAY));
+        assert_eq!(result, Some(36862281418));
     }
 }
