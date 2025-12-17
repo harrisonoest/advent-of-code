@@ -17,18 +17,27 @@ pub fn part_one(input: &str) -> Option<u64> {
             .map(|(index, _)| index)
             .unwrap_or_default();
 
+        // need to add logic for when the highest value is at the last index
+        // of the vector. In this case, we need to find the second highest value and
+        // then use the first value that we found that's at the end
+
         let first_num = line_chars[first_num_index];
+
+        println!("hhh splitting at index: {first_num_index}");
 
         let second_list = line_chars.split_off(first_num_index);
 
-        let max_second_num_index = line_chars
+        let max_second_num_index = second_list
             .iter()
             .enumerate()
             .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(Ordering::Equal))
             .map(|(index, _)| index)
             .unwrap_or_default();
 
-        let second_num = second_list[max_second_num_index];
+        let second_num = match second_list.len() {
+            0 => 0,
+            _ => second_list[max_second_num_index],
+        };
 
         println!("first: {first_num}");
         println!("second: {second_num}");
