@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 advent_of_code::solution!(5);
 
 // Guesses: 798 (correct)
@@ -9,7 +7,6 @@ pub fn part_one(input: &str) -> Option<u64> {
     let mut active_ingredients = vec![];
     let mut line_flipped = false;
     for line in input.lines() {
-        // println!("line: {line}");
         if line == "" {
             line_flipped = true;
             continue;
@@ -21,9 +18,6 @@ pub fn part_one(input: &str) -> Option<u64> {
         }
     }
 
-    // println!("ranges: {:?}", ranges);
-    // println!("active: {:?}", active_ingredients);
-
     let mut ret_ingredients: Vec<u64> = vec![];
 
     for range in ranges {
@@ -32,7 +26,6 @@ pub fn part_one(input: &str) -> Option<u64> {
         let upper_limit = temp[1].parse::<u64>().unwrap_or_default();
         for i in active_ingredients.iter() {
             if lower_limit <= *i && upper_limit >= *i {
-                // println!("added ingredient {i} in range {lower_limit}-{upper_limit}");
                 if !ret_ingredients.contains(&i) {
                     ret_ingredients.push(*i);
                 }
@@ -45,7 +38,7 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(ret_val)
 }
 
-// Guesses: 387859640528018 (too high)
+// Guesses: 387859640528018 (too high), 366181852921027 (correct)
 pub fn part_two(input: &str) -> Option<u64> {
     let ret_val;
     let mut ranges = vec![];
@@ -56,66 +49,65 @@ pub fn part_two(input: &str) -> Option<u64> {
         ranges.push(line);
     }
 
-    // println!("ranges: {:?}", ranges);
-
-    let mut ret_ingredients = vec![];
-    // let lower_limits: Vec<u64> = vec![];
-    // let upper_limits: Vec<u64> = vec![];
-    let mut limits: Vec<(u64, u64)> = vec![];
+    let mut limits: Vec<Limit> = vec![];
 
     for r in ranges.iter().to_owned() {
         let ran: Vec<&str> = r.split("-").collect();
-        let ll = ran[0].parse::<u64>().unwrap_or_default();
-        let ul = ran[1].parse::<u64>().unwrap_or_default();
-        limits.push((ll, ul));
+        let start = ran[0].parse::<u64>().unwrap_or_default();
+        let end = ran[1].parse::<u64>().unwrap_or_default();
+        limits.push(Limit { start, end });
     }
 
-    limits.sort_by_key(|&(start, _)| start);
+    limits.sort();
 
-    for range in ranges {
-        let temp: Vec<&str> = range.split("-").collect();
-        let lower_limit = temp[0].parse::<u64>().unwrap_or_default();
-        let upper_limit = temp[1].parse::<u64>().unwrap_or_default();
-        let mut lower_offset: u64 = 0;
-        let mut upper_offset: u64 = 0;
-
-        for limit in limits.iter() {
-            if upper_limit < limit.1 && upper_limit > limit.0 {
-                let temp_high = limit.1 - upper_limit;
-                upper_offset = temp_high;
-            }
-            if lower_limit > limit.0 && lower_limit < limit.1 {
-                let temp_low = lower_limit - limit.0;
-                lower_offset = temp_low;
-            }
+    let mut joined_limits = vec![];
+    let mut last_limit = limits[0];
+    for new_limit in limits.as_slice().iter().skip(1) {
+        last_limit = if let Some(joined) = last_limit.overlap_join(new_limit) {
+            joined
+        } else {
+            joined_limits.push(last_limit);
+            *new_limit
         }
-
-        limits.push((lower_limit, upper_limit));
-
-        println!("lower: {lower_limit}");
-        println!("upper: {upper_limit}");
-        println!("lower offset: {lower_offset}");
-        println!("upper offset: {upper_offset}");
-
-        if lower_offset > 0 {
-            lower_offset -= 1;
-        }
-
-        if upper_offset > 0 {
-            upper_offset -= 1;
-        }
-
-        let num = upper_limit - lower_limit - upper_offset - lower_offset;
-
-        println!("num: {num}");
-
-        ret_ingredients.push(num);
     }
+    joined_limits.push(last_limit);
 
-    ret_val = ret_ingredients.iter().sum();
+    ret_val = joined_limits
+        .iter()
+        .map(|l| l.end - l.start + 1)
+        .sum::<u64>();
 
     Some(ret_val)
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct Limit {
+    start: u64,
+    end: u64,
+}
+
+impl Limit {
+    // const fn contains(&self, value: u64) -> bool {
+    //     self.start <= value && value <= self.end
+    // }
+    const fn overlaps(&self, other: &Self) -> bool {
+        self.start <= other.end && other.start <= self.end
+    }
+    fn overlap_join(&self, other: &Self) -> Option<Self> {
+        self.overlaps(other).then(|| Self {
+            start: std::cmp::min(self.start, other.start),
+            end: std::cmp::max(self.end, other.end),
+        })
+    }
+}
+
+/*
+Cases:
+
+- Range does not overlap with any other range
+- Lower end overlaps with another range
+- Upper end overlaps with another range
+- Entire range overlaps with another range
+ */
 
 #[cfg(test)]
 mod tests {
